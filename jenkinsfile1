@@ -1,0 +1,49 @@
+pipeline{
+    agent {label 'worker'}
+    options{
+        buildDiscarder(logRotator(daysToKeepStr: '15'))
+        disableConcurrentBuilds()
+        timeout(time: 1, unit: 'MINUTES')
+        retry(3)
+    }
+    parameters{
+        string(name: 'BRANCH', defaultValue: 'develop')
+        choice(name: 'ENV', choices: ['DEV','QA','PROD','ANALYST'])
+        booleanParam(name: 'TEST_CASES', defaultValue: true)
+    }
+    triggers { 
+        pollSCM "*/5 * * * *" 
+        cron "0 */4 * * *" 
+    }
+    stages{
+        stage('First Stage'){
+            steps{
+                sh "echo Hello"
+                sh "echo More Steps"
+                sh "sleep 10"
+            }
+        }
+        stage('Test Stage'){
+            parallel{
+                stage('Linux Stage'){
+                    steps{
+                        sh "echo we are in Linux Stage"
+                        sh "sleep 60"
+                    }
+                }
+                stage('Windows Stage'){
+                    steps{
+                        sh "echo we are in Windows Stage"
+                        sh "sleep 60"
+                    }
+                }
+
+            }
+        }
+    }
+    post{
+        always{
+            sh "echo I will always run"
+        }
+    }
+}

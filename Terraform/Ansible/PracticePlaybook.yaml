@@ -1,0 +1,128 @@
+-
+ hosts: all
+ name: First Play
+ become: true
+ tasks:
+ - name: Connectivity Test
+   ping: 
+ - name: Copying Files
+   copy:
+     src: inventory
+     dest: /home/ubuntu/main.sh
+ - name: Update repositories cache and install "nginx" package
+   apt:
+    name: nginx
+    update_cache: yes
+#Creating a user in client machine
+ - name: Add the user 'johnd' with a specific uid and a primary group of 'admin'
+  ansible.builtin.user:
+    name: johnd
+    comment: John Doe
+    uid: 1040
+    group: admin
+# Condition in Ansible
+-
+  hosts: right
+  name: first play
+  become: true
+  vars:
+    package:
+    - nginx
+    - curl
+    - vim
+  tasks:
+  - name: connectivity test
+    ping:
+  - name: copying files
+    copy:
+      src: inventory
+      dest: /home/ubuntu/main.sh
+  - name: Update repositories cache and install "nginx" package
+    apt:
+      name: '{{ item }}'
+      update_cache: yes
+    with_items: '{{ packages }}'
+    when: 'ansible_distribution == "Ubuntu"'
+  - name: Update repositories cache and install "nginx" package
+    yum:
+      name: nginx
+      update_cache: yes
+    when: 'ansible_distribution == "Centos"'
+
+#Install Nginx package using loop
+-
+  hosts: right
+  name: first play
+  become: true
+  tasks:
+  - name: connectivity test
+    ping:
+  - name: copying files
+    copy:
+      src: inventory
+      dest: /home/ubuntu/main.sh
+  - name: Update repositories cache and install "nginx" package
+    apt:
+      name: nginx
+      update_cache: yes
+    when: 'ansible_distribution == "Ubuntu"'
+  - name: Update repositories cache and install "nginx" package
+    yum:
+      name: nginx
+      update_cache: yes
+    when: 'ansible_distribution == "Centos"'
+#Declare the package in variable. 
+-
+  hosts: right
+  name: first play
+  become: true
+  vars:
+    package: nginx
+  tasks:
+  - name: connectivity test
+    ping:
+  - name: copying files
+    copy:
+      src: inventory
+      dest: /home/ubuntu/main.sh
+  - name: Update repositories cache and install "nginx" package
+    apt:
+      name: '{{package}}'
+      update_cache: yes
+    when: 'ansible_distribution == "Ubuntu"'
+  - name: Update repositories cache and install "nginx" package
+    yum:
+      name: nginx
+      update_cache: yes
+    when: 'ansible_distribution == "Centos"'
+
+# When mutiple package need to install in machine
+
+-
+  hosts: right
+  name: first play
+  become: true
+  vars:
+    package:
+    - nginx
+    - vim
+    - curl
+    - ping
+  tasks:
+  - name: connectivity test
+    ping:
+  - name: copying files
+    copy:
+      src: inventory
+      dest: /home/ubuntu/main.sh
+  - name: Update repositories cache and install "nginx" package
+    apt:
+      name: '{{ item }}'
+      update_cache: yes
+    with_items: '{{ package }}'
+    when: 'ansible_distribution == "Ubuntu"'
+  - name: Update repositories cache and install "nginx" package
+    yum:
+      name: nginx
+      update_cache: yes
+    when: 'ansible_distribution == "Centos"'

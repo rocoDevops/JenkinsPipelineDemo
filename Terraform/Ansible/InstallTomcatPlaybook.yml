@@ -1,0 +1,71 @@
+-
+ hosts: webserver
+ become: true
+ tasks:
+   - name: Install Java 1.8
+     apt:
+       name: openjdk-8-jdk
+       state: present
+   - name: add group "tomcat"
+     group: ##groupadd tomcat in Linux
+       name: tomcat
+   - name: add user "tomcat"
+     user:  ##useradd tomcat -G tomcat in Linux
+       name: tomcat
+       group: tomcat
+       createhome: no
+   - name: download tomcat
+     get_url: ##wget url in Linux
+       url: https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.20/bin/apache-tomcat-9.0.20.tar.gz
+       dest: /tmp/apache-tomcat-9.0.20.tar.gz
+   - name: Extract Archive
+     unarchive: ## tar -xzf tarfile in linux
+       src: /tmp/apache-tomcat-9.0.20.tar.gz
+       dest: /opt
+       remote_src: yes
+  #creata a short cut using symlink
+   - name: create symlink
+     file: ##  ln -s /opt/tomcat /opt/apache-tomcat-9.0.20
+       src: /opt/apache-tomcat-9.0.20
+       path: /opt/tomcat
+       state: link
+   - name: Change Ownership of Tomcat installation
+     file: ##chmod 755 -R /opt/tomcat
+       path: /opt/tomcat
+       owner: tomcat
+       group: tomcat
+       mode: 0755
+       state: directory
+       recurse: yes
+   - name: create tomcat.service file 
+     file:
+       path: /etc/systemd/system/tomcat.service
+       state: touch
+   - name: create Tomcat Service
+     blockinfile:
+       path: /etc/systemd/system/tomcat.service
+       block: |
+         [Unit]
+         Description=Tomcat - instance %i
+         After=syslog.target network.target
+         [Service]
+         Type=forking
+         User=tomcat
+         Group=tomcat
+         Environment="CATALINA_HOME=/opt/tomcat/"
+         ExecStart=/opt/tomcat/bin/startup.sh
+         ExecStop=/opt/tomcat/bin/shutdown.sh
+         [Install]
+         WantedBy=multi-user.target
+   - name: enable & start tomcat service
+     systemd: ## systemctl enable tomcat, systecctl start tomcat
+        name: tomcat
+        state: started
+        enabled: yes
+        
+   - name: validate tomcat is running
+     shell: service tomcat status
+     register: tstatus
+
+   - debug:
+       var: tstatus.stdout_lines  

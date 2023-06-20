@@ -1,0 +1,66 @@
+- name: Play1
+  hosts: webserver
+  tasks:
+    - name: Copying the file to remote
+      copy:
+        src: /etc/ansible/ansible.cfg
+        dest: /tmp
+    - name: Create a Directory
+      file:
+        path: /tmp/testdir
+        state: directory
+    - name: Create a File Inside Directory
+      file:
+        path: /tmp/testdir/testtext.txt
+        state: touch
+
+- name: Play2
+  hosts: webserver
+  tasks:
+    - name: Install wget
+      apt:
+        name: "{{ item }}" //to install list of packages 
+        state: present
+        update_cache: yes # If we want to run apt-get update command
+      loop:
+        - nginx
+        - curl
+        - vim
+
+## Variable in Ansible pLaybook
+- name: Play
+  hosts: webserver
+  vars:
+    a: 5
+    name: Ansible
+    car: bmw
+  tasks:
+    - name: Print a Message
+      debug: #Debug is same like exho command in Linux. It will print the statement. 
+        msg: "How are you"
+    - name: print a value
+      debug:
+        var: car
+    - name:
+      debug:
+        msg: "the value of a is: {{ a }}" #If we print text and number in same line.  
+    - name: Declare a Variable in Command Line
+      debug:
+        msg: "This is the variable passed from a command line: {{ abc }}"
+## Condition
+- name: Play1
+  hosts: webserver
+  tasks: 
+    - name : install vim
+      when: action == "install"
+      apt:
+       name: vim
+       state: present
+       update_cache: yes
+    - name : uninstall vim
+      when: action == "uninstall"
+      apt:
+       name: vim
+       state: absent #This is used to uninstall the Software Package
+       update_cache: yes 
+

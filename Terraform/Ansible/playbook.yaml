@@ -1,0 +1,16 @@
+-
+  hosts: right
+  name: first play
+  become: true
+  tasks:
+  - name: connectivity test
+    ping:
+  - name: copying files
+    copy:
+      src: inventory
+      dest: /home/ubuntu/main.sh
+  - name: Update repositories cache and install "nginx" package
+    apt:
+      name: nginx
+      update_cache: yes
+
